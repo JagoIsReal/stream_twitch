@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Planning - JagoIsReal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --cp-orange: #FF6B35;
+            --cp-cyan: #00F0FF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            color: var(--cp-orange);
+            text-align: center;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .editor-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 30px;
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            margin-bottom: 40px;
+        }
+
+        .editor-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: var(--cp-cyan);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .week-config {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--cp-cyan);
+        }
+
+        .input-group input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--cp-orange);
+            color: #fff;
+            padding: 10px 15px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+        }
+
+        .days-editor {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .day-editor {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            padding: 15px;
+        }
+
+        .day-editor.active {
+            border-color: var(--cp-orange);
+        }
+
+        .day-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            color: var(--cp-cyan);
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            min-height: 100px;
+        }
+
+        .activity-item {
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid var(--cp-orange);
+            padding: 8px;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .activity-item .btn-group {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .activity-item .edit-btn,
+        .activity-item .remove-btn {
+            background: var(--cp-orange);
+            border: none;
+            color: #000;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .activity-item .edit-btn {
+            background: var(--cp-cyan);
+        }
+
+        .add-activity-btn {
+            background: var(--cp-cyan);
+            color: #000;
+            border: none;
+            padding: 8px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .add-activity-btn:hover {
+            background: var(--cp-orange);
+        }
+
+        .activity-form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a1f;
+            border: 3px solid var(--cp-orange);
+            padding: 30px;
+            z-index: 1000;
+            min-width: 500px;
+            display: none;
+        }
+
+        .activity-form.active {
+            display: block;
+        }
+
+        .form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            display: none;
+        }
+
+        .form-overlay.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--cp-cyan);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--cp-orange);
+            color: #fff;
+            padding: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .paste-zone {
+            background: rgba(0, 240, 255, 0.1);
+            border: 2px dashed var(--cp-cyan);
+            padding: 20px;
+            text-align: center;
+            color: var(--cp-cyan);
+            font-size: 14px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .paste-zone:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--cp-orange);
+        }
+
+        .paste-zone.has-image {
+            border-color: var(--cp-orange);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .paste-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 10px;
+            border: 2px solid var(--cp-orange);
+        }
+
+        .form-group.inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group.inline > div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-btn {
+            flex: 1;
+            padding: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            border: none;
+        }
+
+        .form-btn.save {
+            background: var(--cp-cyan);
+            color: #000;
+        }
+
+        .form-btn.cancel {
+            background: #666;
+            color: #fff;
+        }
+
+        .export-btn {
+            background: var(--cp-orange);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .export-btn:hover {
+            background: var(--cp-cyan);
+        }
+
+        /* Planning final 1920x1080 */
+        .planning-preview {
+            transform: scale(0.4);
+            transform-origin: top center;
+            margin: 40px auto;
+        }
+
+        #planning-final {
+            width: 1920px;
+            height: 1080px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #planning-final video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.2;
+        }
+
+        .planning-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 60px 80px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .planning-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .planning-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 72px;
+            font-weight: 900;
+            color: var(--cp-orange);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .planning-dates {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--cp-cyan);
+            letter-spacing: 2px;
+        }
+
+        .planning-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 20px;
+            flex: 1;
+        }
+
+        .planning-footer {
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        .planning-link {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--cp-cyan);
+            text-decoration: none;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .planning-day {
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid var(--cp-orange);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .planning-day-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--cp-cyan);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .planning-day-date {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .planning-activities {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .planning-activity {
+            position: relative;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--cp-orange);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .planning-activity.single {
+            flex: 1;
+        }
+
+        .planning-activity-bg {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100%;
+            width: auto;
+            min-width: 100%;
+            object-fit: cover;
+            opacity: 0.3;
+        }
+
+        .planning-activity-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 15px;
+            width: 100%;
+        }
+
+        .planning-activity-time {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cp-cyan);
+            margin-bottom: 5px;
+        }
+
+        .planning-activity-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .planning-activity-desc {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.3;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Générateur de Planning</h1>
+
+        <!-- Éditeur -->
+        <div class="editor-section">
+            <h2 class="editor-title">Configuration de la semaine</h2>
+            
+            <div class="week-config">
+                <div class="input-group">
+                    <label>Date de début (Lundi)</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="input-group">
+                    <label>Date de fin (Dimanche)</label>
+                    <input type="date" id="endDate">
+                </div>
+            </div>
+
+            <h3 class="editor-title" style="font-size: 20px; margin-top: 30px;">Activités par jour</h3>
+            <div class="days-editor" id="daysEditor">
+                <!-- Généré par JS -->
+            </div>
+        </div>
+
+        <!-- Aperçu et export -->
+        <div class="editor-section">
+            <h2 class="editor-title">Aperçu du Planning</h2>
+            <div class="planning-preview">
+                <div id="planning-final">
+                    <video autoplay loop muted playsinline>
+                        <source src="assets/fond_stream.webm" type="video/webm">
+                    </video>
+                    <div class="planning-overlay">
+                        <div class="planning-header">
+                            <div class="planning-title">Planning de la semaine</div>
+                            <div class="planning-dates" id="planningDates">-- au --</div>
+                        </div>
+                        <div class="planning-grid" id="planningGrid">
+                            <!-- Généré par JS -->
+                        </div>
+                        <div class="planning-footer">
+                            <a href="https://www.twitch.tv/jagoisreal" class="planning-link">twitch.tv/jagoisreal</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="export-btn" onclick="exportPlanning()">
+                <i class="fas fa-download"></i> Télécharger PNG (1920x1080)
+            </button>
+        </div>
+    </div>
+
+    <!-- Formulaire d'ajout d'activité -->
+    <div class="form-overlay" id="formOverlay" onclick="closeActivityForm()"></div>
+    <div class="activity-form" id="activityForm">
+        <h3 class="editor-title" style="font-size: 22px; margin-bottom: 20px;">Ajouter une activité</h3>
+        <div class="form-group">
+            <label>Image de fond</label>
+            <input type="file" id="activityImageFile" accept="image/*" onchange="handleImageUpload(event)">
+            <input type="text" id="activityImageUrl" placeholder="Ou URL d'image" style="margin-top: 10px;">
+            <div class="paste-zone" id="pasteZone" onclick="focusPasteZone()">
+                <i class="fas fa-paste"></i> Cliquez ici puis Ctrl+V pour coller une image
+                <img id="pastePreview" class="paste-preview" style="display: none;">
+            </div>
+        </div>
+        <div class="form-group inline">
+            <div>
+                <label>Heure de début (optionnel)</label>
+                <input type="time" id="activityTimeStart">
+            </div>
+            <div>
+                <label>Heure de fin (optionnel)</label>
+                <input type="time" id="activityTimeEnd">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Titre de l'activité</label>
+            <input type="text" id="activityTitle" placeholder="Ex: Cyberpunk 2077" required>
+        </div>
+        <div class="form-group">
+            <label>Description (optionnel)</label>
+            <textarea id="activityDesc" placeholder="Courte description..."></textarea>
+        </div>
+        <div class="form-buttons">
+            <button class="form-btn save" onclick="saveActivity()">Ajouter</button>
+            <button class="form-btn cancel" onclick="closeActivityForm()">Annuler</button>
+        </div>
+    </div>
+
+    <script>
+        const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+        let currentDay = null;
+        let currentActivityIndex = null;
+        let currentImageData = null;
+        let activities = {
+            0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []
+        };
+
+        // Initialiser les dates par défaut (semaine en cours)
+        function initDates() {
+            const today = new Date();
+            const monday = new Date(today);
+            const dayOfWeek = today.getDay();
+            const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            monday.setDate(today.getDate() + diff);
+            
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            document.getElementById('startDate').valueAsDate = monday;
+            document.getElementById('endDate').valueAsDate = sunday;
+            
+            updatePlanningDates();
+        }
+
+        // Générer l'éditeur des jours
+        function generateDaysEditor() {
+            const container = document.getElementById('daysEditor');
+            container.innerHTML = '';
+
+            days.forEach((day, index) => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day-editor';
+                dayDiv.innerHTML = `
+                    <div class="day-name">${day}</div>
+                    <div class="activity-list" id="activities-${index}"></div>
+                    <button class="add-activity-btn" onclick="openActivityForm(${index})">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </button>
+                `;
+                container.appendChild(dayDiv);
+            });
+
+            updateAllActivities();
+        }
+
+        // Gérer l'upload d'image
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImageData = e.target.result;
+                    document.getElementById('activityImageUrl').value = '';
+                    updatePastePreview(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Gérer le collage d'image
+        function handlePaste(event) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            
+            for (let item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    const blob = item.getAsFile();
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        currentImageData = e.target.result;
+                        document.getElementById('activityImageUrl').value = '';
+                        document.getElementById('activityImageFile').value = '';
+                        updatePastePreview(e.target.result);
+                    };
+                    
+                    reader.readAsDataURL(blob);
+                    break;
+                }
+            }
+        }
+
+        // Mettre à jour l'aperçu de l'image collée
+        function updatePastePreview(imageData) {
+            const preview = document.getElementById('pastePreview');
+            const zone = document.getElementById('pasteZone');
+            
+            if (imageData) {
+                preview.src = imageData;
+                preview.style.display = 'block';
+                zone.classList.add('has-image');
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+                zone.classList.remove('has-image');
+            }
+        }
+
+        // Focus sur la zone de collage
+        function focusPasteZone() {
+            document.getElementById('pasteZone').focus();
+        }
+
+        // Ouvrir le formulaire d'ajout
+        function openActivityForm(dayIndex) {
+            currentDay = dayIndex;
+            currentActivityIndex = null;
+            currentImageData = null;
+            document.getElementById('activityForm').classList.add('active');
+            document.getElementById('formOverlay').classList.add('active');
+            document.getElementById('activityImageFile').value = '';
+            document.getElementById('activityImageUrl').value = '';
+            document.getElementById('activityTimeStart').value = '';
+            document.getElementById('activityTimeEnd').value = '';
+            document.getElementById('activityTitle').value = '';
+            document.getElementById('activityDesc').value = '';
+            document.querySelector('.activity-form h3').textContent = 'Ajouter une activité';
+            updatePastePreview(null);
+        }
+
+        // Ouvrir le formulaire d'édition
+        function editActivity(dayIndex, activityIndex) {
+            currentDay = dayIndex;
+            currentActivityIndex = activityIndex;
+            const activity = activities[dayIndex][activityIndex];
+            
+            currentImageData = activity.image && activity.image.startsWith('data:') ? activity.image : null;
+            
+            document.getElementById('activityForm').classList.add('active');
+            document.getElementById('formOverlay').classList.add('active');
+            document.getElementById('activityImageFile').value = '';
+            document.getElementById('activityImageUrl').value = activity.image && !activity.image.startsWith('data:') ? activity.image : '';
+            document.getElementById('activityTimeStart').value = activity.timeStart || '';
+            document.getElementById('activityTimeEnd').value = activity.timeEnd || '';
+            document.getElementById('activityTitle').value = activity.title || '';
+            document.getElementById('activityDesc').value = activity.desc || '';
+            document.querySelector('.activity-form h3').textContent = 'Modifier l\'activité';
+            updatePastePreview(currentImageData);
+        }
+
+        // Fermer le formulaire
+        function closeActivityForm() {
+            document.getElementById('activityForm').classList.remove('active');
+            document.getElementById('formOverlay').classList.remove('active');
+            currentDay = null;
+            currentActivityIndex = null;
+            currentImageData = null;
+        }
+
+        // Sauvegarder une activité
+        function saveActivity() {
+            const imageUrl = document.getElementById('activityImageUrl').value.trim();
+            const image = currentImageData || imageUrl;
+            const timeStart = document.getElementById('activityTimeStart').value;
+            const timeEnd = document.getElementById('activityTimeEnd').value;
+            const title = document.getElementById('activityTitle').value.trim();
+            const desc = document.getElementById('activityDesc').value.trim();
+
+            if (!title) {
+                alert('Le titre est obligatoire');
+                return;
+            }
+
+            const activityData = { image, timeStart, timeEnd, title, desc };
+
+            if (currentActivityIndex !== null) {
+                // Mode édition
+                activities[currentDay][currentActivityIndex] = activityData;
+            } else {
+                // Mode ajout
+                activities[currentDay].push(activityData);
+            }
+
+            updateAllActivities();
+            updatePlanning();
+            closeActivityForm();
+        }
+
+        // Supprimer une activité
+        function removeActivity(dayIndex, activityIndex) {
+            activities[dayIndex].splice(activityIndex, 1);
+            updateAllActivities();
+            updatePlanning();
+        }
+
+        // Mettre à jour l'affichage des activités dans l'éditeur
+        function updateAllActivities() {
+            days.forEach((day, dayIndex) => {
+                const container = document.getElementById(`activities-${dayIndex}`);
+                container.innerHTML = '';
+
+                activities[dayIndex].forEach((activity, actIndex) => {
+                    const actDiv = document.createElement('div');
+                    actDiv.className = 'activity-item';
+                    
+                    let timeStr = '';
+                    if (activity.timeStart && activity.timeEnd) {
+                        timeStr = `<strong>${activity.timeStart} - ${activity.timeEnd}</strong><br>`;
+                    } else if (activity.timeStart) {
+                        timeStr = `<strong>${activity.timeStart}</strong><br>`;
+                    }
+                    
+                    actDiv.innerHTML = `
+                        ${timeStr}
+                        ${activity.title}
+                        <div class="btn-group">
+                            <button class="edit-btn" onclick="editActivity(${dayIndex}, ${actIndex})" title="Modifier">✎</button>
+                            <button class="remove-btn" onclick="removeActivity(${dayIndex}, ${actIndex})" title="Supprimer">×</button>
+                        </div>
+                    `;
+                    container.appendChild(actDiv);
+                });
+            });
+        }
+
+        // Mettre à jour les dates du planning
+        function updatePlanningDates() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const startStr = start.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const endStr = end.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                document.getElementById('planningDates').textContent = `${startStr} au ${endStr}`;
+                
+                updatePlanning();
+            }
+        }
+
+        // Calculer la durée en minutes
+        function getDurationMinutes(timeStart, timeEnd) {
+            if (!timeStart || !timeEnd) return 60; // Durée par défaut : 1h
+            
+            const [startH, startM] = timeStart.split(':').map(Number);
+            const [endH, endM] = timeEnd.split(':').map(Number);
+            
+            let startMinutes = startH * 60 + startM;
+            let endMinutes = endH * 60 + endM;
+            
+            // Si l'heure de fin est inférieure à l'heure de début, c'est le lendemain
+            if (endMinutes < startMinutes) {
+                endMinutes += 24 * 60; // Ajouter 24h
+            }
+            
+            return endMinutes - startMinutes;
+        }
+
+        // Mettre à jour le planning final
+        function updatePlanning() {
+            const container = document.getElementById('planningGrid');
+            container.innerHTML = '';
+
+            const startDate = document.getElementById('startDate').value;
+            if (!startDate) return;
+
+            const start = new Date(startDate);
+
+            days.forEach((day, index) => {
+                const currentDate = new Date(start);
+                currentDate.setDate(start.getDate() + index);
+                const dateStr = currentDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'planning-day';
+
+                const dayActivities = activities[index];
+                const activityCount = dayActivities.length;
+
+                // Calculer les durées totales
+                let totalDuration = 0;
+                const durations = dayActivities.map(activity => {
+                    const duration = getDurationMinutes(activity.timeStart, activity.timeEnd);
+                    totalDuration += duration;
+                    return duration;
+                });
+
+                let activitiesHtml = '';
+                dayActivities.forEach((activity, actIndex) => {
+                    let timeStr = '';
+                    if (activity.timeStart && activity.timeEnd) {
+                        timeStr = `${activity.timeStart} - ${activity.timeEnd}`;
+                    } else if (activity.timeStart) {
+                        timeStr = activity.timeStart;
+                    }
+
+                    const bgImage = activity.image ? `<img src="${activity.image}" class="planning-activity-bg" crossorigin="anonymous">` : '';
+
+                    // Calculer le flex-grow basé sur la durée
+                    let flexStyle = '';
+                    if (activityCount === 1) {
+                        flexStyle = 'class="planning-activity single"';
+                    } else {
+                        const flexGrow = durations[actIndex] / totalDuration * 100;
+                        flexStyle = `style="flex: ${flexGrow}"`;
+                    }
+
+                    activitiesHtml += `
+                        <div ${flexStyle.includes('class') ? flexStyle : 'class="planning-activity"'} ${flexStyle.includes('style') ? flexStyle : ''}>
+                            ${bgImage}
+                            <div class="planning-activity-content">
+                                ${timeStr ? `<div class="planning-activity-time">${timeStr}</div>` : ''}
+                                <div class="planning-activity-title">${activity.title}</div>
+                                ${activity.desc ? `<div class="planning-activity-desc">${activity.desc}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                dayDiv.innerHTML = `
+                    <div class="planning-day-name">${day}</div>
+                    <div class="planning-day-date">${dateStr}</div>
+                    <div class="planning-activities">${activitiesHtml}</div>
+                `;
+
+                container.appendChild(dayDiv);
+            });
+        }
+
+        // Téléchargement classique (fallback)
+        function fallbackDownload(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Export en PNG
+        async function exportPlanning() {
+            const element = document.getElementById('planning-final');
+            const preview = element.closest('.planning-preview');
+            const originalTransform = preview.style.transform;
+            preview.style.transform = 'scale(1)';
+
+            // Générer le nom de fichier avec les dates
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            let filename = 'JagoIsReal_Planning';
+            
+            if (startDate && endDate) {
+                const formatDate = (dateStr) => {
+                    const date = new Date(dateStr);
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}${month}${year}`;
+                };
+                
+                filename = `JagoIsReal_Planning_${formatDate(startDate)}_${formatDate(endDate)}`;
+            }
+            filename += '.png';
+
+            try {
+                // Attendre que toutes les images soient chargées
+                const images = element.querySelectorAll('img');
+                await Promise.all(Array.from(images).map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; // Continue même si l'image ne charge pas
+                    });
+                }));
+
+                const canvas = await html2canvas(element, {
+                    backgroundColor: '#000000',
+                    scale: 2,
+                    width: 1920,
+                    height: 1080,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false
+                });
+
+                // Convertir le canvas en blob
+                canvas.toBlob(async (blob) => {
+                    // Utiliser l'API File System Access si disponible (Chrome/Edge)
+                    if ('showSaveFilePicker' in window) {
+                        try {
+                            const handle = await window.showSaveFilePicker({
+                                suggestedName: filename,
+                                types: [{
+                                    description: 'Image PNG',
+                                    accept: { 'image/png': ['.png'] }
+                                }]
+                            });
+                            
+                            const writable = await handle.createWritable();
+                            await writable.write(blob);
+                            await writable.close();
+                        } catch (err) {
+                            // L'utilisateur a annulé ou erreur
+                            if (err.name !== 'AbortError') {
+                                console.error('Erreur sauvegarde:', err);
+                                // Fallback vers le téléchargement classique
+                                fallbackDownload(blob, filename);
+                            }
+                        }
+                    } else {
+                        // Navigateurs ne supportant pas l'API (Firefox, Safari)
+                        fallbackDownload(blob, filename);
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur export:', error);
+                alert('Erreur lors de l\'export.');
+            } finally {
+                preview.style.transform = originalTransform;
+            }
+        }
+
+        // Initialiser
+        initDates();
+        generateDaysEditor();
+        updatePlanning();
+
+        // Écouter les changements de dates
+        document.getElementById('startDate').addEventListener('change', updatePlanningDates);
+        document.getElementById('endDate').addEventListener('change', updatePlanningDates);
+
+        // Écouter le collage d'image
+        document.addEventListener('paste', handlePaste);
+
+        // Assurer que la vidéo se joue
+        document.querySelector('video').play().catch(e => console.log('Autoplay bloqué:', e));
+    </script>
+</body>
+</html>
