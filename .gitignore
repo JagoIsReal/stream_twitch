@@ -7,6 +7,7 @@
 # Ignorer tous les fichiers à la racine
 /*
 
-# Ne pas ignorer le .gitignore et le dossier overlays
+# Ne pas ignorer le .gitignore, index.html et le dossier overlays
 !.gitignore
+!index.html
 !/overlays/
