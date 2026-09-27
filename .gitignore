@@ -1,0 +1,11 @@
+# Ignorer tous les fichiers à la racine
+/*
+
+# Ignorer tout le contenu du dossier overlays
+/overlays/*
+
+# SAUF planning-generator.html
+!/overlays/planning-generator.html
+
+# Ne pas ignorer le .gitignore lui-même
+!.gitignore
