@@ -1,8 +1,10 @@
 # Ignorer tout le contenu du dossier overlays
 /overlays/*
 
-# SAUF planning-generator.html
+# SAUF planning-generator.html et ses dépendances
 !/overlays/planning-generator.html
+!/overlays/assets/
+!/overlays/assets/fond_stream.webm
 
 # Ignorer tous les fichiers à la racine
 /*
